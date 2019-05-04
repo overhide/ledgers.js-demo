@@ -325,7 +325,7 @@ Now that you finished a "free" play-through, go back to try again?
 
 ### "Buy Legendary" Run-Through
 
-For this run-through we'll go much quicker as it is expected you did the run-through in the previous section already.
+For this run-through we'll go much quicker as it is expected you did the run-through in the [previous section](#go-free-run-through) already.
 
 **(¬-_-)¬ Click the "Generate" button.**
 
@@ -345,7 +345,7 @@ At the top of this login page, beside the golden cake icon, you see that for the
 
 Clicking the "x" or the "Let's Go" button will bring you to a [Stripe.com](https://stripe.com) payment modal.
 
-Once at the [Stripe.com](https://stripe.com) modal--where you enter VISA information--you could click the "x" to cancel out and read through the logs and code like we did in the previous section.  We're going to continue on instead.
+Once at the [Stripe.com](https://stripe.com) modal--where you enter VISA information--you could click the "x" to cancel out and read through the logs and code like we did in the [previous section](#go-free-run-through).  We're going to continue on instead.
 
 **(¬-_-)¬ Enter "foo@bar.com" for the email.**
 
