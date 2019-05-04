@@ -19,7 +19,7 @@ npm install
 npm run pull
 ```
 
-The demo uses ib-browser wallets and requires to be run using a Web server.
+The demo uses in-browser wallets and requires to be run using a Web server.
 
 The initial demo login page is [demo/login.html](demo/login.html).  To host it run:
 
@@ -29,7 +29,7 @@ npm run demo
 
 This starts *http-server* reporting the port used, usually `8080`.  
 
-Point your browser at `http://localhost:8080/login.html` to start the demo.
+Point your browser at http://localhost:8080/login.html to start the demo.
 
 ## Before You Run the Demo App
 
