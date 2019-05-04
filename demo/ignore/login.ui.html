@@ -1,0 +1,183 @@
+<!--
+  Markup for the login page of the demo application that isn't related to oh-ledgers.js functionality--the "meat" of the
+  demo.
+-->
+
+<div class="ui grid">
+  <div id="window" class="row">
+    <div id="appview" class="sixteen wide eight wide computer column">
+      <div class="ui icon message">
+        <i class="info icon"></i>
+        <div class="content">
+          <div class="header">
+            This page should be seen in widescreen on a PC.
+          </div>
+          <p>This way you'll get a log pane and a code pane to review the demo.</p>
+        </div>
+      </div>
+      <div class="ui  horizontal segments">
+        <div class="ui v-center basic right aligned segment">
+          <i class="huge birthday cake icon"></i>
+        </div>
+        <div class="ui v-center basic left aligned segment">
+          <h1>cake game</h1>
+        </div>
+      </div>
+      <div id="menu">
+        <p><i class="birthday cake icon"></i> the common cake is free</p>
+        <p>
+          <i class="birthday cake purple icon"></i> the epic cake is a one time fee of <span id="epic2pay"></span> (<span id="epicneedmore"></span>)
+          <br/>
+          <i class="birthday cake purple icon invisible"></i><i class="hand point right grey icon"></i><span class="subdued">includes legendary access for 24 hours following purchase</span>
+        </p>        
+        <p><i class="birthday cake yellow icon"></i> the legendary cake is <span id="legendary2pay"></span> per 24 hours (<span id="legendaryneedmore"></span>)</p>
+      </div>
+      <div id="radiobuttons" class="ui basic center aligned segment">
+        <div class="ui horizontal segments">
+          <div id="radiolabel" class="ui v-center basic right aligned segment">
+            <h4>Login With</h4>
+          </div>
+          <div id="radiocontainer" class="ui basic left aligned segment">
+            <div class="ui form">
+              <div class="grouped fields">
+                <div class="field">
+                  <div id="ethereum" class="ui radio checkbox">
+                    <input type="radio" name="ledger">
+                    <label>Ethereum</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <div id="ohledger" class="ui radio checkbox">
+                    <input type="radio" name="ledger">
+                    <label>Overhide (USD)</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="getwallet" class="ui basic center aligned subdued segment">
+        <div>
+          <a href="https://metamask.io/" target="_blank">(no <em>Ethereum</em> wallet detected, install a <em>web3</em>
+            injecting wallet to ease managing your keys)</a>
+        </div>
+      </div>
+      <div id="needrinkeby" class="ui basic center aligned subdued segment">
+        (wallet is on <b><span id="currentnet">unknown</span></b> network;  needs to be on <b>rinkeby</b>)
+      </div>
+      <div id="usingwallet" class="ui basic center aligned subdued segment">
+        (using Web3 wallet for address: log out of wallet for manual address/secret-key entry)
+      </div>
+      <div id="formcontainer" class="ui basic center aligned segment">
+        <div id="addressform" class="ui form">
+          <div class="field">
+            <div class="ui labeled input">
+              <div class="ui label">
+                address
+              </div>
+              <input id="ledgeraddress" type="text">
+              <button id="ledgeraddresscopyicon" class="ui icon button" onclick="copyToClipboard('ledgeraddress')">
+                <i class="copy outline fitted icon"></i>
+              </button>
+            </div>
+          </div>
+          <div id="secretkeycomponent" class="field">
+            <div class="ui labeled input">
+              <div class="ui label">
+                secret key
+              </div>
+              <input id="secretkey" type="text">
+              <button class="ui icon button" onclick="copyToClipboard('secretkey')">
+                <i class="copy outline fitted icon"></i>
+              </button>
+            </div>
+          </div>          
+          <div class="field invisible">
+            <input class="invisible" id="checkedwhensigned" type="checkbox">
+          </div>
+          <div class="field">
+            <div id="generatebutton" class="ui button" onclick="generate()">Generate</div>
+            <div id="resetpasswordbutton" class="ui button" onclick="$('#resetpassword-modal').modal('show')">Reset Password</div>
+            <div id="viewhistory" class="ui button" onclick="$('#history-modal').modal('show')">View Payment History</div>
+          </div>
+          <div class="field">
+            <div id="common" class="ui primary submit button" onclick="gocommon()">Go Free</div>
+            <div id="epic" class="ui primary submit button" onclick="goepic()">Go Epic</div>
+            <div id="legendary" class="ui primary submit button" onclick="golegendary()">Go Legendary</div>            
+          </div>          
+          <span id="wallet-popup"><img src="ignore/checkwallet.svg"></img></span>
+          <div class="ui error message"></div>          
+        </div>
+      </div>
+    </div>
+    <div class="eight wide computer only column">
+      <div id="logview">
+        <div id="logviewcontents"></div>
+      </div>
+      <div id="codeview">
+        <iframe id="codeframe" src="ignore/code.html#welcome.txt"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal for history -->
+  <div class="ui modal" id="history-modal">
+    <div class="header">
+      Payment History
+      <i class="close icon" onclick="$('#history-modal').modal('hide')"></i>
+    </div>
+    <div class="scrolling content">
+      <div id="historycontent">
+    </div>
+  </div>
+
+  <!-- modal for fake visa -->
+  <div class="ui small modal" id="testvisa-modal">
+    <div class="header">
+      Using <em>Test</em> VISA with Stripe
+      <i class="close icon" onclick="$('#testvisa-modal').modal('hide')"></i>
+    </div>
+    <div class="content">
+      <div class="ui basic segment">
+        <p>You're about to make a fake payment using a fake credit card as part of this demo.</p>
+        <p>The demo is hooked to test APIs from <a href="https://stripe.com" target="_blank">Stripe.com</a>.</p>
+        <p>Notice the <em>TEST MODE</em> badge in the upper right corner when the payment dialog pops up.</p>
+        <h4>
+          On the next screen use fake information
+          <pre><code>
+          VISA: 4242 4242 4242 4242
+          Expiry Date (MM/YY): 01 /25
+          CVC: 111
+          </code></pre>
+        </h4>
+        <p>You probably want to use your email address to fully play around with the <b>Reset Password</b> workflow in the demo.  You could use a fake email like <code>foo@bar.com</code>, you just won't be able to <b>Reset Password</b> later.</p>
+      </div>
+      <div class="ui basic center aligned segment">
+        <div class="ui primary submit button" onclick="$('#testvisa-modal').modal('hide')">Let's Go</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal for reset password -->
+  <div class="ui small modal" id="resetpassword-modal">
+    <div class="header">
+      Reset Password <span class="subdued">(On a Ledger?)</span>
+      <i class="close icon" onclick="$('#resetpassword-modal').modal('hide')"></i>
+    </div>
+    <div class="content">
+      <div class="ui basic segment">
+        <p>There is no concept of resetting passwords with blockchain ledgers.  We cannot generate new secret keys for existing addresses.  Should users forgot their secret keys, they cannot proove they own their addresses.</p>
+        <p>But when using <a href="https://test.ohledger.com/pay" target="_blank">overhide-ledger</a> payments are made with <a href="https://stripe.com" target="_blank">Stripe.com</a>.  Every <a href="https://stripe.com" target="_blank">Stripe.com</a> payment involves email or SMS verification.  If email verification occured, that email address can be provided to <b>re-target</b> <a href="https://test.ohledger.com/pay" target="_blank">overhide-ledger</a> transactions as if they come from a new address.</p>
+        <p>Since <a href="https://test.ohledger.com/pay" target="_blank">overhide-ledger</a> is not a blockchain, we can rewrite ledger entries in the database.</p>
+        <p>Check out this feature by clicking the blue button and visiting the <a href="https://test.ohledger.com/pay" target="_blank">overhide-ledger</a> site.</p>
+        <p>You can think of <b>re-targeting</b> as a blockchain on-boarding feature.  It isn't a password reset.  But it's not as painful as loosing your secret key to an address on a blockchain.</p>
+        <p>Of course this isn't available for any blockchain ledgers supported by <em>overhide</em>, it's only available for the centralized <a href="https://test.ohledger.com/pay" target="_blank">overhide-ledger</a>.</p>
+      </div>
+      <div class="ui basic center aligned segment">
+        <a class="ui primary submit button" href="https://test.ohledger.com/pay" target="_blank">Let's Go</a>
+      </div>
+    </div>
+  </div>
+
+</div>

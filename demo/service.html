@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+  <script src="ignore/logging.js"></script> <!-- helper JS functionality to support showing source code for this file in the UI -->
+  <script src="config.js"></script> <!-- CONFIG shared between login.html and service.html -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="ignore/styles.css">
+</head>
+
+<script>
+  log("You are now looking at service.html", null, 'service.html');
+
+  log('service.html uses the same global settings: paymentSchedule', paymentSchedule, 'service.html');
+  // NOTE: the above is loaded from config.js ^^^
+  // config.js is shared between this login.html and service.html 
+</script>
+
+<body>
+<div class="ui grid">
+  <div id="window" class="row">
+    <div id="appview" class="sixteen wide eight wide computer column">
+      <div class="ui icon message">
+        <i class="info icon"></i>
+        <div class="content">
+          <div class="header">
+            This page should be seen in widescreen on a PC.
+          </div>
+          <p>This way you'll get a log pane and a code pane to review the demo.</p>
+        </div>
+      </div>
+      <div id="servicemenu">
+        <p>
+          You are now looking at the <em>service.html</em> file.  <b>This is the actual business logic of the <em>cake game</em></b>.  
+          You play it by starting the level:
+        </p>
+        <div class="ui basic center aligned segment">
+          <div id="play" class="ui primary loading disabled submit button" onclick="$('#level-modal').modal('show')">Play Level</div>
+        </div>
+        <p>
+          This <em>service.html</em> is representative of your service code--the app business logic.  The previous
+          page (<a href="login.html">login.html</a>) was just the login screen.
+        </p>
+        <p>
+          On the browser URL line we pass the following parameters from <a href="login.html">login.html</a>:
+        </p>
+        <ul>
+          <li>the ledger we're using: <span class="highlight" id="ledger"></span></li>
+          <li>the user's address on that ledger: <span class="highlight" id="address"></span></li>
+          <li>some BASE64 encoded message</li>
+          <li>signature for that message</li>
+          <li>the <em>overhide</em> remuneration provider URI</li>
+        </ul>
+        <p>
+          The <a href="login.html">login.html</a> helped you figure out your authorization tier for the game (common, epic, legendary).
+          It helped you pay for the tier should you need to.  But it didn't create or pass any authorization tokens to this
+          <em>service.html</em> layer.  All that information is on the ledger of your choosing.
+        </p>
+        <p>
+          This <em>service.html</em> layer doesn't use wallets or the <em>oh$</em> library.  It simply interrogates the <em>overhide</em> 
+          remuneration provider <a class="swaggerpage" target="_blank">with some simple HTTP calls</a> for the chosen ledger.
+        </p>
+        <p>
+          Keep in mind this is a simple in-browser demo. Normally you would take a user from the login page to a backend service--that this <em>service.html</em>
+          is representative of. Or perhaps this <em>service.html</em> represents a native app.
+        </p>
+        <p>
+          Regardless you wouldn't be doing the vetting in decompilable browser code.
+        </p>
+        <div class="ui message">
+          <div class="content">
+          <p>
+            The key takeaway is that this <em>service.html</em>--regardless if it's a backend or a native app--has a unified
+            approach to work with authorized access tiers regardless of currency, wallet, etc: leveraging <a class="swaggerpage" target="_blank">consistent <em>overhide</em>
+            remuneration API HTTP calls</a>.
+          </p>
+          </div>
+        </div>
+        <div class="ui message">
+          <div class="content">
+            <div class="ui horizontal segments">
+              <div class="ui v-center basic right aligned segment">
+                <i class="huge green thumbs up icon"></i>
+              </div>
+              <div id="servicenote" class="ui v-center basic left aligned segment">
+                <p>
+                  The <em>overhide</em> system is created to enable writing full featured Web apps for the browser without 
+                  writing back-ends.
+                </p>
+                <p>
+                  This remuneration approach is just a piece of a bigger solution. The details in this <em>service.html</em> are handled in the other
+                  pieces for you.
+                </p>
+                <h4>Please visit <a href="https://overhide.io" target="_blank">https://overhide.io</a> for more.</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br/>
+      </div>
+    </div>
+    <div class="eight wide computer only column">
+      <div id="logview">
+        <div id="logviewcontents"></div>
+      </div>
+      <div id="codeview">
+        <iframe id="codeframe" src="ignore/code.html#welcome-from-service.txt"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal for game level -->
+<div class="ui mini modal" id="level-modal">
+  <div class="header">
+    Level &infin;
+    <i class="close icon" onclick="$('#level-modal').modal('hide')"></i>
+  </div>
+  <div class="content">
+    <div class="ui basic segment">
+      <p id="common"><i class="birthday cake icon"></i> the common cake is a lie!</p>
+      <p id="epic"><i class="birthday cake purple icon"></i> the epic cake is a lie!</p>
+      <p id="legendary"><i class="birthday cake yellow icon"></i> the legendary cake is a lie!</p>
+    </div>
+    <div class="ui basic center aligned segment">
+      <button class="ui primary submit button" onclick="$('#level-modal').modal('hide')">Fine!</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.onload = async function() {
+    showPostScreenSetupLogs();
+
+    log('parsing URL line', null, 'service.html');
+    var urlmatches = document.location.hash.match('#([^/]+)/([^/]+)/([^/]+)/([^/]+)/(.+)');
+    var ledger = urlmatches[1];
+    var address = urlmatches[2];
+    var recipient = paymentSchedule[ledger].appAddress;
+    var message = atob(urlmatches[3]);
+    var signature = urlmatches[4];
+    var uri = urlmatches[5];
+    var url = new URL(uri);
+    var swaggeruri = `${url.protocol}//${url.host}/swagger.html`;
+    $('#ledger').text(ledger === 'eth-web3' ? 'Ethereum (rinkeyby)' : 'overhide-ledger (USD)');
+    $('#address').text(address);
+    $('.swaggerpage').attr('href',`${swaggeruri}`);
+    
+    try {
+      log('Checking validity of address on ledger', {ledger:ledger, address:address}, 'service.html');
+      if (!await isValidOnLedger(uri, address, message, signature)) {
+        log('Invalid address on ledger as per signature', null, 'service.html');
+        return;
+      }
+    } catch (e) {
+      log('Error checking validity of address on ledger',{
+        error: String(e),
+        uri: uri,
+        address: address,
+        message: message,
+        signature: signature
+      },'service.html');
+      return;
+    }
+    
+    try {
+      log('Determining auth tier', { ledger: ledger, uri: uri, from: address, to: recipient }, 'service.html');
+      var tier = await getTier(ledger, uri, address, recipient);
+      log('Determined auth tier',{tier:tier},'service.html');
+    } catch (e) {
+      log('Error determining auth tier', { ledger: ledger, uri: uri, from: address, to: recipient }, 'service.html');
+      return;
+    }
+
+    $('#common').hide();
+    $('#epic').hide();
+    $('#legendary').hide();
+    $(`#${tier}`).show();
+    $('#play').removeClass('loading');
+    $('#play').removeClass('disabled');
+  }
+
+  /**
+   * Determine tier.
+   * 
+   * @param {string} ledger - in config.js to get config from
+   * @param {string} uri - of overhide remuneration provider API
+   * @param {string} from - tally transactions from this address
+   * @param {string} to - tally transactions to this address
+   * @returns {string} either 'common', 'epic', or 'legendary'
+   */
+  async function getTier(ledger, uri, from, to) {
+    log('Determining cost covered for epic',null,'service.html');
+    var isEpicCovered = await isCostCovered(
+      uri, 
+      from, 
+      to,
+      parseFloat(paymentSchedule[ledger].epicTierCost) * paymentSchedule[ledger].currencyLabelToDenominationMultiplier,
+      paymentSchedule[ledger].tallyDaysForEpic);
+    log('Determining cost covered for legendary', null, 'service.html');
+    var isLegendaryCovered = await isCostCovered(
+      uri,
+      from,
+      to,
+      parseFloat(paymentSchedule[ledger].legendaryTierCost) * paymentSchedule[ledger].currencyLabelToDenominationMultiplier,
+      paymentSchedule[ledger].tallyDaysForLegendary);        
+    log('Determned cost coverages', { isEpicCovered: isEpicCovered, isLegendaryCovered: isLegendaryCovered}, 'service.html');
+    if (isLegendaryCovered) return 'legendary';
+    if (isEpicCovered) return 'epic';
+    return 'common';
+  }
+
+  /**
+   * Determine if cost is covered withing the number of days on the ledger
+   * 
+   * @param {string} uri - of overhide remuneration provider API
+   * @param {string} from - tally transactions from this address
+   * @param {string} to - tally transactions to this address
+   */
+  async function isCostCovered(uri, from, to, cost, tallyDays) {
+    if (tallyDays) {
+      let since = new Date();
+      since.setDate(since.getDate() - tallyDays);
+      var tally = await getTally(uri, from, to, since);
+    } else {
+      var tally = await getTally(uri, from, to, null);
+    }
+    var delta = cost - tally;
+    return delta <= 0;
+  }
+
+
+
+  /**
+   * Call overhide remuneration API to check validity of signature for address
+   * 
+   * @param {string} uri - of overhide remuneration provider API
+   * @param {string} address - to check
+   * @param {string} message - that's signed in signature
+   * @param {string} signature - to check for address
+   * @returns {boolean}
+   */
+  async function isValidOnLedger(uri, address, message, signature) {
+    log('remunaration API >> isValidOnLedger call', null, 'service.html');
+    return await fetch(`${uri}/is-signature-valid`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        signature: btoa(signature),
+        message: btoa(message),
+        address: address
+      })
+    })
+    .then((result) => {
+      if (result.status == 200) {
+        log('remunaration API >> isValidOnLedger OK', null, 'service.html');
+        return true;
+      } else {
+        log('remunaration API >> isValidOnLedger NOTOK', null, 'service.html');
+        return false;
+      }
+    })
+    .catch(e => {
+      log('remunaration API >> isValidOnLedger ERROR', {error: String(e)}, 'service.html');
+      throw String(e)
+    });
+  }
+
+  /**
+   * Call overhide remuneration API to get transaction tally for determining authority tiers
+   * 
+   * @param {string} uri - of overhide remuneration provider API
+   * @param {string} from - tally transactions from this address 
+   * @param {string} to - tally transactions to this address
+   * @param {Date} date - 'null' for all-time, or date since when to tally transactions
+   * @returns {string} tally in remuneration provider's denomination
+   */ 
+  async function getTally(uri, from, to, date) {
+    log('remunaration API >> getTally call', null, 'service.html');
+    let since = '';
+    if (date) {
+      since = `&since=${date.toISOString()}`;
+    }
+    return await fetch(`${uri}/get-transactions/${from}/${to}?tally-only=true${since}`)
+      .then(res => res.json())
+      .then(res => {
+        log('remunaration API >> getTally call OK', {tally: res.tally}, 'service.html');
+        return res.tally;
+      })
+      .catch(e => {
+        log('remunaration API >> getTally call ERROR', {error: String(e)}, 'service.html');
+        throw String(e)
+      });
+  }
+
+</script>
+
+</body>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+  <script src="ignore/logging.js"></script> <!-- helper JS functionality to support showing source code for this file in the UI -->
+  <script src="ignore/login.ui.js"></script> <!-- helper JS functionality to support login.ui.html -->
+  <script src="config.js"></script> <!-- CONFIG shared between login.html and service.html -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="ignore/styles.css">
+
+  <!-- "wallet" helper -->
+  <script src="ledgers.js"></script>
+</head>
+
+<script>
+  log("our demo application's payment schedule in different currencies");
+
+  log('global settings: paymentSchedule', paymentSchedule); 
+  // NOTE: the above is loaded from config.js ^^^
+  // config.js is shared between this login.html and service.html 
+
+  log('setting ohledger network to test');
+  oh$.setNetwork(OHLEDGER,{currency:'USD',mode:'test'});
+  oh$.setNetwork(OHLEDGER_WEB3, { currency: 'USD', mode: 'test' });
+
+  // all our demo data
+  var data = {      
+    isWalletPresent: null,
+    isNetworkReady: false,
+    isEthereumUsed: false,
+    isAddressSigned: false,
+    isGathering: false,
+    hasValidTx: false,
+    address: '',
+    privateKey: '',
+    network: '',
+    txs: [],
+    txsFrom: '',
+    txsTo: '',
+    txsDenomination: '',
+    balanceDueForEpic: 'N/A', // label / text
+    balanceDueForEpicRaw: 0, // value in denomination
+    balanceDueForLegendary: 'N/A', // label / text
+    balanceDueForLegendaryRaw: 0 // value in denomination
+  };
+</script>
+
+<body>
+  <div id="login-ui-html">
+    <!-- This is replaced by the contents of login.ui.html in window.onload() below, with CSS from login.ui.css, and
+    supporting JavaScript from login.ui.js -->
+  </div>
+</body>
+
+<script>
+  window.onload = function () {
+    $("#login-ui-html").load("ignore/login.ui.html", () => {
+      showPostScreenSetupLogs();
+      ui.setup();
+      ui.update(data);
+    }); // load the templates    
+  }
+
+  // listen for existence of wallet
+  oh$.onWalletChange = function (imparterTag, isPresent) {
+    log("OH >> onWalletChange :: wallet callback called--wallet status changed", { imparterTag: imparterTag, isPresent: isPresent });
+    switch (imparterTag) {
+      case ETH:
+        if (data.isWalletPresent && !isPresent) {
+          data.isAddressSigned = false;
+        }
+        data.isWalletPresent = isPresent;
+        data.isNetworkReady = isPresent && data.network == 'rinkeby';
+        gatherData();
+        break;
+      default:
+        break;
+    }
+    ui.update(data);
+  };
+
+  oh$.onWalletPopup = function (imparterTag) {
+    log("OH >> onWalletPopup :: popped", { imparterTag: imparterTag });
+    ui.signalWalletPopup();
+  }
+
+  // listen for change in network
+  oh$.onNetworkChange = function (imparterTag, network) {
+    log("OH >> onNetworkChange :: network change callback called--network updated", { imparterTag: imparterTag, network: network })
+    switch (imparterTag) {
+      case ETH:
+        data.isNetworkReady = data.isWalletPresent && network.name == 'rinkeby';
+        data.network = network.name;
+        gatherData();
+        break;
+      default:
+        break;
+    }
+    ui.update(data);
+  }
+
+  // called on change of address 
+  oh$.onCredentialsUpdate = function (imparterTag, creds) {
+    log("OH >> onCredentialsUpdate :: wallet callback called--address updated", { imparterTag: imparterTag, creds: creds });
+    switch (imparterTag) {
+      case ETH:
+      case OHLEDGER_WEB3:
+        data.isAddressSigned = true; // only called when creds valid: ignore private key below, it's to silence UI form validator
+        data.address = creds.address;
+        data.privateKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
+        break;
+      case OHLEDGER:
+        data.isAddressSigned = true; // only called when creds valid
+        data.address = creds.address;
+        data.privateKey = creds.secret;
+        break;
+      default:
+        break;
+    }
+    ui.update(data);
+    data.txs = [];
+    gatherData();
+  }
+
+  // see imparters in oh$ documentation
+  function getImparter() {
+    return data.isEthereumUsed ? ETH : data.isWalletPresent ? OHLEDGER_WEB3 : OHLEDGER;
+  }
+
+  // Get Data From Ledger
+  async function gatherData() {
+    if (!data.isAddressSigned) return;
+    if (data.isEthereumUsed && !data.isNetworkReady) return;
+    if (data.isGathering) return;
+    data.isGathering = true;
+    let imparter = getImparter();
+    data.txsDenomination = paymentSchedule[imparter].denomination;
+    data.txsFrom = data.address;
+    data.txsTo = paymentSchedule[imparter].appAddress;
+    log('gethering ledger data',{imparter:imparter,address:data.address});
+    try {
+      data.balanceDueForEpicRaw = await getBalanceDue(
+        parseFloat(paymentSchedule[imparter].epicTierCost) * paymentSchedule[imparter].currencyLabelToDenominationMultiplier, 
+        paymentSchedule[imparter].tallyDaysForEpic);      
+      data.balanceDueForEpic = data.balanceDueForEpicRaw / paymentSchedule[imparter].currencyLabelToDenominationMultiplier;
+      data.balanceDueForEpic = parseFloat(data.balanceDueForEpic).toFixed(paymentSchedule[imparter].fixedPointDigitsForDisplay);
+      data.balanceDueForEpic = data.balanceDueForEpic == 0 ? 'paid' : data.balanceDueForEpic + ' short';
+      data.balanceDueForLegendaryRaw = await getBalanceDue(
+        parseFloat(paymentSchedule[imparter].legendaryTierCost) * paymentSchedule[imparter].currencyLabelToDenominationMultiplier, 
+        paymentSchedule[imparter].tallyDaysForLegendary);
+      data.balanceDueForLegendary = data.balanceDueForLegendaryRaw / paymentSchedule[imparter].currencyLabelToDenominationMultiplier;
+      data.balanceDueForLegendary = parseFloat(data.balanceDueForLegendary).toFixed(paymentSchedule[imparter].fixedPointDigitsForDisplay);
+      data.balanceDueForLegendary = data.balanceDueForLegendary == 0 ? 'paid' : data.balanceDueForLegendary + ' short';
+      let hasValidTx = await oh$.isOnLedger(imparter);
+      let txs = await oh$.getTransactions(imparter, { address: data.txsTo })
+      data.isGathering = false;
+      data.hasValidTx = hasValidTx;
+      data.txs = txs;
+      ui.update(data);
+    }
+    catch(err) {
+      log('error while gathering ledger data', { error: String(err) });
+      data.isGathering = false;
+      data.hasValidTx = false;
+      data.txs = [];
+      ui.update(data);
+    }
+    ui.update(data);
+  }
+
+  // we could do this from txs in gatherData, but for demonstration purposes we make separate calls
+  async function getBalanceDue(cost, tallyDays) {
+    let imparter = getImparter();
+    if (tallyDays) {
+      let since = new Date();
+      since.setDate(since.getDate() - tallyDays);
+      var tally = await oh$.getTally(imparter, { address: paymentSchedule[imparter].appAddress }, since);
+    } else {
+      var tally = await oh$.getTally(imparter, { address: paymentSchedule[imparter].appAddress }, null);
+    }
+    var delta = cost - tally;
+    return delta < 0 ? 0 : delta;
+  }
+
+  // UI Callbacks
+  
+  // When Ethereum radio button chosen
+  ui.onEthereumSelected = () => {
+    log('UI >> has Ethereum selected');
+    data.isEthereumUsed = true;
+    ui.update(data);
+    gatherData();
+  };
+
+  // When USD radio button chosen
+  ui.onFiatSelected = () => {
+    log('UI >> has USD selected');
+    data.isEthereumUsed = false;
+    ui.update(data);
+    gatherData();
+  }
+
+  // When manually entered address & secret is valid and changed
+  ui.onCredsChangedCheckSignature = async (address, secret) => {
+    log('UI >> onCredsChangedCheckSignature', { address: address, secret: secret });
+    if (!data.isEthereumUsed && !data.isWalletPresent) {
+      try {
+        data.address = address;
+        data.privateKey = secret;
+        data.isAddressSigned = false;
+        data.hasValidTx = false;
+        data.txs = [];
+        await oh$.setCredentials(OHLEDGER, { address: address, secret: secret });
+      } catch (err) {
+        log('UI >> onCredsChangedCheckSignature ERROR', { error: String(err) });
+        ui.update(data);
+      }
+    }
+  }
+
+  // generate address
+  ui.onGenerate = async () => {
+    log('UI >> onGenerate');
+    if (!data.isEthereumUsed && !data.isWalletPresent) {
+      await oh$.generateCredentials(OHLEDGER,null);
+    }
+  }
+
+  // common button press
+  ui.onGoCommon = async () => {
+    if (data.isGathering) return;
+    data.isGathering = true;
+    log('UI >> onGoCommon');
+    let imparter = getImparter();
+    let to = paymentSchedule[imparter].appAddress;
+    let message = `verify ownership of address by signing on ${new Date().toLocaleString()}`;
+    try {
+      let ok = true;
+      let signature = null;
+      if (!data.isOnLedger) {
+        signature = await oh$.sign(imparter, message);
+        ok = await oh$.createTransaction(imparter, 0, to, { message: message, signature: signature });
+      }
+      if (ok) {
+        log('UI >> onGoCommon -- logging in');
+        window.location.href = `service.html#${imparter}/${data.address}/${btoa(message)}/${signature}/${oh$.getOverhideRemunerationAPIUri(imparter)}`;
+      } else {
+        log('UI >> onGoCommon -- failed to login');
+      }
+      data.isGathering = false;
+      ui.update(data);
+    } catch (err) {
+      log('UI >> onGoCommon ERROR', { error: String(err) });
+      data.isGathering = false;
+      ui.update(data);
+    }     
+    ui.update(data);
+  }
+
+  ui.onGoEpic = async () => {
+    if (data.isGathering) return;
+    data.isGathering = true;
+    log('UI >> onGoEpic');
+    let imparter = getImparter();
+    let to = paymentSchedule[imparter].appAddress;
+    let message = `verify ownership of address by signing on ${new Date().toLocaleString()}`;
+    try {
+      var signature = await oh$.sign(imparter, message);
+    } catch (err) {
+      log('UI >> onGoEpic sig ERROR', { error: String(err) });
+      data.isGathering = false;
+      ui.update(data);
+      throw err
+    }
+    if (data.balanceDueForEpic === 'paid') {
+      window.location.href = `service.html#${imparter}/${data.address}/${btoa(message)}/${signature}/${oh$.getOverhideRemunerationAPIUri(imparter)}`;
+      return;
+    }
+    if (imparter === OHLEDGER || imparter === OHLEDGER_WEB3) await ui.popupTestVisaInfo();
+    oh$.createTransaction(imparter, data.balanceDueForEpicRaw, to, { message: message, signature: signature })
+      .then((res) => {
+        if (res) {
+          log('UI >> onGoEpic -- logging in');
+          window.location.href = `service.html#${imparter}/${data.address}/${btoa(message)}/${signature}/${oh$.getOverhideRemunerationAPIUri(imparter)}`;
+        } else {
+          log('UI >> onGoEpic -- failed to login');
+        }
+        data.isGathering = false;
+        ui.update(data);
+      })
+      .catch((err) => {
+        log('UI >> onGoEpic ERROR', { error: String(err) });
+        data.isGathering = false;
+        ui.update(data);
+      })
+    ui.update(data);
+  }
+
+  ui.onGoLegendary = async () => {
+    if (data.isGathering) return;
+    data.isGathering = true;
+    log('UI >> onGoLegendary');
+    let imparter = getImparter();
+    let to = paymentSchedule[imparter].appAddress;
+    let message = `verify ownership of address by signing on ${new Date().toLocaleString()}`;
+    try {
+      var signature = await oh$.sign(imparter, message);
+    } catch (err) {
+      log('UI >> onGoLegendary sig ERROR', { error: String(err) });
+      data.isGathering = false;
+      ui.update(data);
+      throw err
+    }
+    if (data.balanceDueForLegendary === 'paid') {
+      window.location.href = `service.html#${imparter}/${data.address}/${btoa(message)}/${signature}/${oh$.getOverhideRemunerationAPIUri(imparter)}`;
+      return;
+    }
+    if (imparter === OHLEDGER || imparter === OHLEDGER_WEB3) await ui.popupTestVisaInfo();
+    oh$.createTransaction(imparter, data.balanceDueForLegendaryRaw, to, { message: message, signature: signature })
+      .then((res) => {
+        if (res) {
+          log('UI >> onGoLegendary -- logging in');
+          window.location.href = `service.html#${imparter}/${data.address}/${btoa(message)}/${signature}/${oh$.getOverhideRemunerationAPIUri(imparter)}`;
+        } else {
+          log('UI >> onGoLegendary -- failed to login');
+        }
+        data.isGathering = false;
+        ui.update(data);
+      })
+      .catch((err) => {
+        log('UI >> onGoLegendary ERROR', { error: String(err) });
+        data.isGathering = false;
+        ui.update(data);
+      })
+    ui.update(data);
+  }
+
+</script>
+
+</html>
