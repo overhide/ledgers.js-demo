@@ -27,7 +27,9 @@
 
   Welcome to the ledgers.js demo app.
 
-  Source: https://github.com/overhide/ledgers.js
+  Source: 
+  
+    https://github.com/overhide/ledgers.js-demo
 
   The pane on the LEFT is the actual rendered 
   demo application for you to interact with.

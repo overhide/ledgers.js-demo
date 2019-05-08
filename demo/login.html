@@ -64,57 +64,57 @@
   }
 
   // listen for existence of wallet
-  oh$.onWalletChange = function (imparterTag, isPresent) {
-    log("OH >> onWalletChange :: wallet callback called--wallet status changed", { imparterTag: imparterTag, isPresent: isPresent });
-    switch (imparterTag) {
+  oh$.addEventListener('onWalletChange', function (e) {
+    log("OH >> onWalletChange :: wallet callback called--wallet status changed", { imparterTag: e.imparterTag, isPresent: e.isPresent });
+    switch (e.imparterTag) {
       case ETH:
-        if (data.isWalletPresent && !isPresent) {
+        if (data.isWalletPresent && !e.isPresent) {
           data.isAddressSigned = false;
         }
-        data.isWalletPresent = isPresent;
-        data.isNetworkReady = isPresent && data.network == 'rinkeby';
+        data.isWalletPresent = e.isPresent;
+        data.isNetworkReady = e.isPresent && data.network == 'rinkeby';
         gatherData();
         break;
       default:
         break;
     }
     ui.update(data);
-  };
+  });
 
-  oh$.onWalletPopup = function (imparterTag) {
-    log("OH >> onWalletPopup :: popped", { imparterTag: imparterTag });
+  oh$.addEventListener('onWalletPopup', function (e) {
+    log("OH >> onWalletPopup :: popped", { imparterTag: e.imparterTag });
     ui.signalWalletPopup();
-  }
+  });
 
   // listen for change in network
-  oh$.onNetworkChange = function (imparterTag, network) {
-    log("OH >> onNetworkChange :: network change callback called--network updated", { imparterTag: imparterTag, network: network })
-    switch (imparterTag) {
+  oh$.addEventListener('onNetworkChange', function (e) {
+    log("OH >> onNetworkChange :: network change callback called--network updated", { imparterTag: e.imparterTag, name: e.name, uri: e.uri  })
+    switch (e.imparterTag) {
       case ETH:
         data.isNetworkReady = data.isWalletPresent && network.name == 'rinkeby';
-        data.network = network.name;
+        data.network = e.name;
         gatherData();
         break;
       default:
         break;
     }
     ui.update(data);
-  }
+  });
 
   // called on change of address 
-  oh$.onCredentialsUpdate = function (imparterTag, creds) {
-    log("OH >> onCredentialsUpdate :: wallet callback called--address updated", { imparterTag: imparterTag, creds: creds });
-    switch (imparterTag) {
+  oh$.addEventListener('onCredentialsUpdate', function (e) {
+    log("OH >> onCredentialsUpdate :: wallet callback called--address updated", { imparterTag: e.imparterTag, address: e.address, secret: e.secret });
+    switch (e.imparterTag) {
       case ETH:
       case OHLEDGER_WEB3:
         data.isAddressSigned = true; // only called when creds valid: ignore private key below, it's to silence UI form validator
-        data.address = creds.address;
+        data.address = e.address;
         data.privateKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
         break;
       case OHLEDGER:
         data.isAddressSigned = true; // only called when creds valid
-        data.address = creds.address;
-        data.privateKey = creds.secret;
+        data.address = e.address;
+        data.privateKey = e.secret;
         break;
       default:
         break;
@@ -122,7 +122,7 @@
     ui.update(data);
     data.txs = [];
     gatherData();
-  }
+  });
 
   // see imparters in oh$ documentation
   function getImparter() {
