@@ -328,7 +328,7 @@ function _typeof(obj) {
  * Repository for this library is https://github.com/overhide/ledgers.js.
  * 
  * The repository contains a demo app of this library working in conjunction with the *overhide* Ethereum remuneration
- * provider (Rinkeby testnet -- https://rinkeby.ethereum.overhide.io) and the *overhide-ledger* (test environment -- https://test.ohledger.com)
+ * provider (Rinkeby testnet -- https://rinkeby.ethereum.overhide.io) and the *overhide-ledger* (test environment -- https://test.ledger.overhide.io)
  * 
  * #### ABOUT
  * 

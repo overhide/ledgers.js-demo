@@ -41,7 +41,7 @@ Below you will find a sample play-by-play run-through of the [demo](https://over
 
 ## Test Environment APIs
 
-This [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)) interacts with the *Rinkeby* *Ethereum* testnet and the [overhide-ledger test environment](https://test.ohledger.com).  This demo is for demonstration purposes.  
+This [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)) interacts with the *Rinkeby* *Ethereum* testnet and the [overhide-ledger test environment](https://test.ledger.overhide.io).  This demo is for demonstration purposes.  
 
 The respective API instances used by the [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) are the following test network nodes:
 
@@ -56,12 +56,12 @@ Use [Stripe's "test" credit cards](https://stripe.com/docs/testing#cards) to pla
 
 *ledger.js* ([source](https://github.com/overhide/ledgers.js/blob/master/src/ledgers.js))([API](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html)) complements blockchain wallets in the browser hence enables authorization via all supported ledgers in the *Service Code* ([source](https://github.com/overhide/ledgers.js/blob/master/demo/service.html)):
 
-* provides transaction and signing functionality for [*overhide-ledger*](https://test.ohledger.com)
+* provides transaction and signing functionality for [*overhide-ledger*](https://test.ledger.overhide.io)
 * abstracts [web3](https://github.com/ethereum/web3.js/) wallets' transaction and signing functionality for [ethers](https://rinkeby.ethereum.overhide.io/swagger.html)
 
 This library abstracts wallets in the [*login*](https://overhide.github.io/ledgers.js-demo/demo/login.html) page; streamlining work for the UX developer.  To try this, run the [demo app](https://overhide.github.io/ledgers.js-demo/demo/login.html) connected to a [web3.js](https://github.com/ethereum/web3.js/) wallet such as [MetaMask](https://metamask.io/).  Keep in mind that at no point in *login.html* ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)) do we talk to [web3.js](https://github.com/ethereum/web3.js/) directly.  All interaction is abstracted by *ledger.js* ([source](https://github.com/overhide/ledgers.js/blob/master/src/ledgers.js))([API](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html)).  __This is the intent of the *ledgers.js library* ([source](https://github.com/overhide/ledgers.js/blob/master/src/ledgers.js))([API](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html)), to abstract interactions with wallets supporting ledgers that have *overhide* remuneration providers__.
 
-The [*overhide-ledger*](https://test.ohledger.com) does not have a wallet, but it can use any [web3.js](https://github.com/ethereum/web3.js/) wallet for key management and signing--[*overhide-ledger*](https://test.ohledger.com) works with Ethereum public-key infrastructure.  Although Ethereum wallets can be used for [*overhide-ledger's*](https://test.ohledger.com) credential management, no Ethereum wallet can transact with [*overhide-ledger*](https://test.ohledger.com)--[*overhide-ledger*](https://test.ohledger.com) is not an Ethereum node.  To make [*overhide-ledger*](https://test.ohledger.com) transactions more seamless, *ledger.js* ([source](https://github.com/overhide/ledgers.js/blob/master/src/ledgers.js))([API](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html)) provides [*overhide-ledger*](https://test.ohledger.com) specific tooling to assist the *login* page UX developer.  Again, see the [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)).
+The [*overhide-ledger*](https://test.ledger.overhide.io) does not have a wallet, but it can use any [web3.js](https://github.com/ethereum/web3.js/) wallet for key management and signing--[*overhide-ledger*](https://test.ledger.overhide.io) works with Ethereum public-key infrastructure.  Although Ethereum wallets can be used for [*overhide-ledger's*](https://test.ledger.overhide.io) credential management, no Ethereum wallet can transact with [*overhide-ledger*](https://test.ledger.overhide.io)--[*overhide-ledger*](https://test.ledger.overhide.io) is not an Ethereum node.  To make [*overhide-ledger*](https://test.ledger.overhide.io) transactions more seamless, *ledger.js* ([source](https://github.com/overhide/ledgers.js/blob/master/src/ledgers.js))([API](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html)) provides [*overhide-ledger*](https://test.ledger.overhide.io) specific tooling to assist the *login* page UX developer.  Again, see the [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)).
 
 ## Play-By-Play Run-Through of a [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)) Session
 
@@ -257,7 +257,7 @@ With our new address generated we decide to play the game for free.
 
 Clicking the "Go Free" button we are presented with a modal.
 
-This modal is furnished by [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html) and is [*overhide-ledger*](https://test.ohledger.com) specific.
+This modal is furnished by [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html) and is [*overhide-ledger*](https://test.ledger.overhide.io) specific.
 
 For the time being don't follow through with the modal.  
 
