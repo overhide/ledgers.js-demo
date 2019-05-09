@@ -177,3 +177,7 @@ span#wallet-popup > img {
   right: 0px;
   z-index: 200;
 }
+
+#networksnote .header, #networksnote b {
+  color: black;
+}
