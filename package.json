@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/overhide/ledgers.js-demo#readme",
   "dependencies": {
-    "ledgers.js": "2.0.0"
+    "ledgers.js": "2.1.2"
   },
   "devDependencies": {
     "copyfiles": "2.1.0",

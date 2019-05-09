@@ -723,63 +723,60 @@ var oh$ = function () {
           switch (_context4.prev = _context4.next) {
             case 0:
               _context4.t0 = imparterTag;
-              _context4.next = _context4.t0 === OHLEDGER_IMPARTER_TAG ? 3 : 19;
+              _context4.next = _context4.t0 === OHLEDGER_IMPARTER_TAG ? 3 : 17;
               break;
 
             case 3:
-              if ('address' in credentials) {
-                _context4.next = 5;
-                break;
-              }
-
-              throw new Error("'address' must be passed in");
-
-            case 5:
               if ('secret' in credentials) {
-                _context4.next = 7;
+                _context4.next = 5;
                 break;
               }
 
               throw new Error("'secret' must be passed in");
 
-            case 7:
-              data.OHLEDGER_IMPARTER_TAG.address = credentials.address;
-              data.OHLEDGER_IMPARTER_TAG.secret = credentials.secret;
-              _context4.prev = 9;
+            case 5:
+              if ('address' in credentials && credentials.address) {
+                data.OHLEDGER_IMPARTER_TAG.address = credentials.address.toLowerCase();
+              } else {
+                data.OHLEDGER_IMPARTER_TAG.address = eth_accounts.privateKeyToAccount(credentials.secret).address.toLowerCase();
+              }
 
-              if (eth_accounts.recover(eth_accounts.sign('test message', credentials.secret)).toLowerCase() == credentials.address.toLowerCase()) {
-                _context4.next = 12;
+              data.OHLEDGER_IMPARTER_TAG.secret = credentials.secret;
+              _context4.prev = 7;
+
+              if (eth_accounts.recover(eth_accounts.sign('test message', data.OHLEDGER_IMPARTER_TAG.secret)).toLowerCase() == data.OHLEDGER_IMPARTER_TAG.address) {
+                _context4.next = 10;
                 break;
               }
 
               throw new Error("'secret' not valid for 'address");
 
-            case 12:
-              _context4.next = 17;
+            case 10:
+              _context4.next = 15;
               break;
 
-            case 14:
-              _context4.prev = 14;
-              _context4.t1 = _context4["catch"](9);
+            case 12:
+              _context4.prev = 12;
+              _context4.t1 = _context4["catch"](7);
               throw new Error("'secret' not valid for 'address");
 
-            case 17:
+            case 15:
               fire('onCredentialsUpdate', {
                 imparterTag: OHLEDGER_IMPARTER_TAG,
-                address: credentials.address,
-                secret: credentials.secret
+                address: data.OHLEDGER_IMPARTER_TAG.address,
+                secret: data.OHLEDGER_IMPARTER_TAG.secret
               });
               return _context4.abrupt("return", true);
 
-            case 19:
+            case 17:
               return _context4.abrupt("return", false);
 
-            case 20:
+            case 18:
             case "end":
               return _context4.stop();
           }
         }
-      }, _callee4, null, [[9, 14]]);
+      }, _callee4, null, [[7, 12]]);
     }));
     return _setCredentials.apply(this, arguments);
   }
@@ -826,12 +823,12 @@ var oh$ = function () {
 
             case 3:
               res = eth_accounts.create();
-              data.OHLEDGER_IMPARTER_TAG.address = res.address;
+              data.OHLEDGER_IMPARTER_TAG.address = res.address.toLowerCase();
               data.OHLEDGER_IMPARTER_TAG.secret = res.privateKey;
               fire('onCredentialsUpdate', {
                 imparterTag: OHLEDGER_IMPARTER_TAG,
-                address: res.address,
-                secret: res.privateKey
+                address: data.OHLEDGER_IMPARTER_TAG.address,
+                secret: data.OHLEDGER_IMPARTER_TAG.secret
               });
               return _context5.abrupt("return", true);
 
@@ -1066,7 +1063,7 @@ var oh$ = function () {
               throw new Error("'date' must be a Date is passed in");
 
             case 2:
-              if ('address' in recipient) {
+              if (!(!('address' in recipient) || !recipient.address)) {
                 _context9.next = 4;
                 break;
               }
@@ -1420,141 +1417,124 @@ var oh$ = function () {
         while (1) {
           switch (_context12.prev = _context12.next) {
             case 0:
-              if (!(amount == 0)) {
-                _context12.next = 5;
-                break;
-              }
-
-              _context12.next = 3;
-              return isOnLedger(imparterTag);
-
-            case 3:
-              if (!_context12.sent) {
-                _context12.next = 5;
-                break;
-              }
-
-              return _context12.abrupt("return", true);
-
-            case 5:
               _context12.t0 = imparterTag;
-              _context12.next = _context12.t0 === OHLEDGER_IMPARTER_TAG ? 8 : _context12.t0 === OHLEDGER_WEB3_IMPARTER_TAG ? 14 : _context12.t0 === ETH_WEB3_IMPARTER_TAG ? 20 : 26;
+              _context12.next = _context12.t0 === OHLEDGER_IMPARTER_TAG ? 3 : _context12.t0 === OHLEDGER_WEB3_IMPARTER_TAG ? 9 : _context12.t0 === ETH_WEB3_IMPARTER_TAG ? 15 : 21;
               break;
 
-            case 8:
+            case 3:
               if (data.OHLEDGER_IMPARTER_TAG.mode) {
-                _context12.next = 10;
+                _context12.next = 5;
                 break;
               }
 
               throw new Error("network 'mode' must be set, use setNetwork");
 
-            case 10:
+            case 5:
               if (data.OHLEDGER_IMPARTER_TAG.address) {
-                _context12.next = 12;
+                _context12.next = 7;
                 break;
               }
 
               throw new Error("from 'address' not set: use setCredentials");
 
-            case 12:
+            case 7:
               from = data.OHLEDGER_IMPARTER_TAG.address;
-              return _context12.abrupt("break", 27);
+              return _context12.abrupt("break", 22);
 
-            case 14:
+            case 9:
               if (data.OHLEDGER_WEB3_IMPARTER_TAG.mode) {
-                _context12.next = 16;
+                _context12.next = 11;
                 break;
               }
 
               throw new Error("network 'mode' must be set, use setNetwork");
 
-            case 16:
+            case 11:
               if (data.OHLEDGER_WEB3_IMPARTER_TAG.walletAddress) {
-                _context12.next = 18;
+                _context12.next = 13;
                 break;
               }
 
               throw new Error("from 'walletAddress' not set: use wallet");
 
-            case 18:
+            case 13:
               from = data.OHLEDGER_WEB3_IMPARTER_TAG.walletAddress;
-              return _context12.abrupt("break", 27);
+              return _context12.abrupt("break", 22);
 
-            case 20:
+            case 15:
               if (data.ETH_WEB3_IMPARTER_TAG.network) {
-                _context12.next = 22;
+                _context12.next = 17;
                 break;
               }
 
               throw new Error("no network for imparter tag");
 
-            case 22:
+            case 17:
               if (data.ETH_WEB3_IMPARTER_TAG.walletAddress) {
-                _context12.next = 24;
+                _context12.next = 19;
                 break;
               }
 
               throw new Error("from 'walletAddress' not set: use wallet");
 
-            case 24:
+            case 19:
               from = data.ETH_WEB3_IMPARTER_TAG.walletAddress;
-              return _context12.abrupt("break", 27);
+              return _context12.abrupt("break", 22);
 
-            case 26:
+            case 21:
               throw new Error('unsupported imparter tag');
 
-            case 27:
+            case 22:
               _context12.t1 = imparterTag;
-              _context12.next = _context12.t1 === OHLEDGER_IMPARTER_TAG ? 30 : _context12.t1 === OHLEDGER_WEB3_IMPARTER_TAG ? 30 : _context12.t1 === ETH_WEB3_IMPARTER_TAG ? 49 : 53;
+              _context12.next = _context12.t1 === OHLEDGER_IMPARTER_TAG ? 25 : _context12.t1 === OHLEDGER_WEB3_IMPARTER_TAG ? 25 : _context12.t1 === ETH_WEB3_IMPARTER_TAG ? 44 : 48;
               break;
 
-            case 30:
+            case 25:
               if (!(amount == 0)) {
-                _context12.next = 44;
+                _context12.next = 39;
                 break;
               }
 
-              if (!('message' in options && 'signature' in options)) {
-                _context12.next = 36;
+              if (!('message' in options && options.message && 'signature' in options && options.signature)) {
+                _context12.next = 31;
                 break;
               }
 
               message = options.message;
               signature = options.signature;
-              _context12.next = 40;
+              _context12.next = 35;
               break;
 
-            case 36:
+            case 31:
               message = "verify ownership of address by signing on ".concat(new Date().toLocaleString());
-              _context12.next = 39;
+              _context12.next = 34;
               return sign(imparterTag, message);
 
-            case 39:
+            case 34:
               signature = _context12.sent;
 
-            case 40:
-              _context12.next = 42;
+            case 35:
+              _context12.next = 37;
               return showOhLedgerGratisIframeUri(imparterTag, from, signature, message);
 
-            case 42:
-              _context12.next = 48;
+            case 37:
+              _context12.next = 43;
               break;
 
-            case 44:
+            case 39:
               eventPromise = setupNewPromise();
               data.OHLEDGER_IMPARTER_TAG.oh_ledger_transact_fn[data.OHLEDGER_IMPARTER_TAG.mode](amount, from, to);
-              _context12.next = 48;
+              _context12.next = 43;
               return eventPromise;
 
-            case 48:
-              return _context12.abrupt("break", 54);
+            case 43:
+              return _context12.abrupt("break", 49);
 
-            case 49:
+            case 44:
               fire('onWalletPopup', {
                 imparterTag: ETH_WEB3_IMPARTER_TAG
               });
-              _context12.next = 52;
+              _context12.next = 47;
               return new Promise(function (resolve, reject) {
                 web3.eth.sendTransaction({
                   from: from,
@@ -1567,16 +1547,16 @@ var oh$ = function () {
                 });
               });
 
-            case 52:
-              return _context12.abrupt("break", 54);
+            case 47:
+              return _context12.abrupt("break", 49);
 
-            case 53:
+            case 48:
               throw new Error('unsupported imparter tag');
 
-            case 54:
+            case 49:
               return _context12.abrupt("return", true);
 
-            case 55:
+            case 50:
             case "end":
               return _context12.stop();
           }

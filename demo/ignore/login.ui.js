@@ -17,11 +17,11 @@ ui = {
   onFiatSelected: null,
 
   /**
-   * Called whenever creds are being changed but they error out on the form
-   * @param {string} address
-   * @param {string} secret
+   * Called whenever entry form data changes; form values are already in `data` global.
+   * 
+   * @param {boolean} isValid - form entry validated form input point of view
    */
-  onCredsChangedCheckSignature: null,
+  onEntryFormDataChanged: null,
 
   /**
    * Called when address generation required by UI
@@ -66,9 +66,6 @@ ui = {
   signalWalletPopup: signalWalletPopup
 };
 
-var address = null;
-var secret = null; 
-
 // setup screen at start
 function setupUi() { 
 
@@ -94,9 +91,7 @@ function setupUi() {
   $('#addressform')
     .form({
       fields: {
-        ledgeraddress: { rules: [{ type: 'regExp[/^0x[0-9a-h]{40}$/gi]', prompt: "Address must start with '0x', be a hexadecimal string, and be 42 characters long" }] },
         secretkey: { rules: [{ type: 'regExp[/^0x[0-9a-h]{64}$/gi]', prompt: "Secret key must start with '0x', be a hexadecimal string, and be 66 characters long" }] },
-        checkedwhensigned: { rules: [{ type: 'checked', prompt: "Invalid pair: secret cannot sign for the address" }] }
       }
     });
 
@@ -106,22 +101,20 @@ function setupUi() {
   $("#addressform input").on('change keyup input', function (e) {
     let newAddress = $('#ledgeraddress').val()
     let newSecret = $('#secretkey').val();
-    if (newAddress !== address
-       || newSecret !== secret) {
-      address = newAddress;
-      secret = newSecret;         
+    if (newAddress !== data.address
+        || newSecret !== data.privateKey) {
+      data.address = newAddress;
+      data.privateKey = newSecret;         
       $('#addressform').form('validate form');
-      if (!$('#addressform').form('is valid')) {
-        ui.onCredsChangedCheckSignature(address, secret);
-      }
+      ui.onEntryFormDataChanged($('#addressform').form('is valid'));
     }
   });
 }
 
 // update screen
 function updateUi(data) {
-  address = data.address;
-  secret = data.privateKey;
+  let address = data.address;
+  let secret = data.privateKey;
   $('#ledgeraddress').val(address);
   $('#secretkey').val(secret);
   $('#currentnet').text(data.network);
@@ -147,10 +140,11 @@ function updateUi(data) {
     $('#secretkeycomponent').show();
     $('#generatebutton').show();
     $('#ledgeraddresscopyicon').show();
-    $('#ledgeraddress').prop('readonly', false);
+    $('#ledgeraddresscomponent').hide();
   } else {
     $('#ethereum').checkbox('set enabled');
     $('#secretkeycomponent').hide();
+    $('#ledgeraddresscomponent').show();
     $('#generatebutton').hide();
     $('#ledgeraddresscopyicon').hide();
     $('#ledgeraddress').prop('readonly', true);
@@ -166,11 +160,6 @@ function updateUi(data) {
   $('#common').addClass('disabled');
   $('#epic').addClass('disabled');
   $('#legendary').addClass('disabled');
-  if (data.isAddressSigned) {
-    $('#checkedwhensigned').prop('checked', true);
-  } else {
-    $('#checkedwhensigned').prop('checked', false);
-  }  
   if (data.isAddressSigned 
     && (!data.isEthereumUsed || data.isNetworkReady)
     && !data.isGathering) {

@@ -67,11 +67,11 @@
         (wallet is on <b><span id="currentnet">unknown</span></b> network;  needs to be on <b>rinkeby</b>)
       </div>
       <div id="usingwallet" class="ui basic center aligned subdued segment">
-        (using Web3 wallet for address: log out of wallet for manual address/secret-key entry)
+        (using Web3 wallet for address: log out of wallet for manual secret-key entry)
       </div>
       <div id="formcontainer" class="ui basic center aligned segment">
         <div id="addressform" class="ui form">
-          <div class="field">
+          <div id="ledgeraddresscomponent" class="field">
             <div class="ui labeled input">
               <div class="ui label">
                 address
@@ -93,9 +93,6 @@
               </button>
             </div>
           </div>          
-          <div class="field invisible">
-            <input class="invisible" id="checkedwhensigned" type="checkbox">
-          </div>
           <div class="field">
             <div id="generatebutton" class="ui button" onclick="generate()">Generate</div>
             <div id="resetpasswordbutton" class="ui button" onclick="$('#resetpassword-modal').modal('show')">Reset Password</div>

@@ -32,10 +32,10 @@
     isEthereumUsed: false,
     isAddressSigned: false,
     isGathering: false,
-    hasValidTx: false,
     address: '',
     privateKey: '',
     network: '',
+    hasTxs: '', // self addressed or provider addressed
     txs: [],
     txsFrom: '',
     txsTo: '',
@@ -71,6 +71,8 @@
         if (data.isWalletPresent && !e.isPresent) {
           data.isAddressSigned = false;
         }
+        data.address = null;
+        data.privateKey = null;
         data.isWalletPresent = e.isPresent;
         data.isNetworkReady = e.isPresent && data.network == 'rinkeby';
         gatherData();
@@ -153,17 +155,19 @@
       data.balanceDueForLegendary = data.balanceDueForLegendaryRaw / paymentSchedule[imparter].currencyLabelToDenominationMultiplier;
       data.balanceDueForLegendary = parseFloat(data.balanceDueForLegendary).toFixed(paymentSchedule[imparter].fixedPointDigitsForDisplay);
       data.balanceDueForLegendary = data.balanceDueForLegendary == 0 ? 'paid' : data.balanceDueForLegendary + ' short';
-      let hasValidTx = await oh$.isOnLedger(imparter);
       let txs = await oh$.getTransactions(imparter, { address: data.txsTo })
+      data.hasTxs = (txs && txs.length > 0);
+      if (!data.hasTxs) {
+        let selfTxs = await oh$.getTransactions(imparter, { address: data.address });
+        data.hasTxs = (selfTxs && selfTxs.length > 0);
+      }
       data.isGathering = false;
-      data.hasValidTx = hasValidTx;
       data.txs = txs;
       ui.update(data);
     }
     catch(err) {
       log('error while gathering ledger data', { error: String(err) });
       data.isGathering = false;
-      data.hasValidTx = false;
       data.txs = [];
       ui.update(data);
     }
@@ -202,19 +206,18 @@
     gatherData();
   }
 
-  // When manually entered address & secret is valid and changed
-  ui.onCredsChangedCheckSignature = async (address, secret) => {
-    log('UI >> onCredsChangedCheckSignature', { address: address, secret: secret });
-    if (!data.isEthereumUsed && !data.isWalletPresent) {
+  // When manually entered form is changed 
+  ui.onEntryFormDataChanged = async (isValid) => {
+    log('UI >> onEntryFormDataChanged', { isValid: isValid, secret: data.privateKey });
+    if (!isValid || (!data.isEthereumUsed && !data.isWalletPresent)) {
       try {
-        data.address = address;
-        data.privateKey = secret;
+        data.address = null;
         data.isAddressSigned = false;
-        data.hasValidTx = false;
         data.txs = [];
-        await oh$.setCredentials(OHLEDGER, { address: address, secret: secret });
+        if (isValid) await oh$.setCredentials(OHLEDGER, { secret: data.privateKey });
+        else ui.update(data);
       } catch (err) {
-        log('UI >> onCredsChangedCheckSignature ERROR', { error: String(err) });
+        log('UI >> onEntryFormDataChanged ERROR', { error: String(err) });
         ui.update(data);
       }
     }
@@ -238,9 +241,8 @@
     let message = `verify ownership of address by signing on ${new Date().toLocaleString()}`;
     try {
       let ok = true;
-      let signature = null;
-      if (!data.isOnLedger) {
-        signature = await oh$.sign(imparter, message);
+      let signature = await oh$.sign(imparter, message);
+      if (!data.hasTxs) {
         ok = await oh$.createTransaction(imparter, 0, to, { message: message, signature: signature });
       }
       if (ok) {

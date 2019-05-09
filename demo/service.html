@@ -206,7 +206,7 @@
       to,
       parseFloat(paymentSchedule[ledger].legendaryTierCost) * paymentSchedule[ledger].currencyLabelToDenominationMultiplier,
       paymentSchedule[ledger].tallyDaysForLegendary);        
-    log('Determned cost coverages', { isEpicCovered: isEpicCovered, isLegendaryCovered: isLegendaryCovered}, 'service.html');
+    log('Determined cost coverages', { isEpicCovered: isEpicCovered, isLegendaryCovered: isLegendaryCovered}, 'service.html');
     if (isLegendaryCovered) return 'legendary';
     if (isEpicCovered) return 'epic';
     return 'common';
