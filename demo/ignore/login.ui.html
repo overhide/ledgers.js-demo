@@ -44,13 +44,13 @@
                 <div class="field">
                   <div id="ethereum" class="ui radio checkbox">
                     <input type="radio" name="ledger">
-                    <label>Ethereum</label>
+                    <label>ethers</label>
                   </div>
                 </div>
                 <div class="field">
                   <div id="ohledger" class="ui radio checkbox">
                     <input type="radio" name="ledger">
-                    <label>Overhide (USD)</label>
+                    <label>dollars</label>
                   </div>
                 </div>
               </div>
@@ -106,6 +106,15 @@
           </div>          
           <span id="wallet-popup"><img src="ignore/checkwallet.svg"></img></span>
           <div class="ui error message"></div>          
+          <div id="networksnote" class="ui positive message">
+            <i class="close icon" onClick="$('#networksnote').hide()"></i>
+            <div class="header">
+              Background Info
+            </div>
+            <p>For <em>dollars</em> our make-believe game developer previously <a href="https://test.ledger.overhide.io" target="_blank">registered</a> with the <a href="https://test.ledger.overhide.io" target="_blank">overhide-ledger test network</a> a using their <code>0x046c88317b23dc57F6945Bf4140140f73c8FC80F</code> ledger address.</p>
+            <hr/>
+            <p>For <em>ethers</em> our make-believe game developer uses the same <code>0x046c88317b23dc57F6945Bf4140140f73c8FC80F</code> <em>ledger address</em> with the <a href="https://rinkeby.etherscan.io/address/0x046c88317b23dc57f6945bf4140140f73c8fc80f" target="_blank">Rinkeby testnet</a>.</p>
+          </div>
         </div>
       </div>
     </div>
