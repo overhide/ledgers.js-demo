@@ -178,6 +178,10 @@ span#wallet-popup > img {
   z-index: 200;
 }
 
+#networksnote {
+  margin-top: 50px;
+}
+
 #networksnote .header, #networksnote b {
   color: black;
 }
