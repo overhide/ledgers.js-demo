@@ -174,6 +174,7 @@ function updateUi(data) {
     $('#epic').addClass('loading');
     $('#legendary').addClass('loading');
   } else {
+    $('#visahint').fadeOut(1000);
     $('#viewhistory').removeClass('loading');
     $('#common').removeClass('loading');
     $('#epic').removeClass('loading');

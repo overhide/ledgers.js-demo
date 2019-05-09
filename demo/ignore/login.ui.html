@@ -3,6 +3,7 @@
   demo.
 -->
 
+<img src="ignore/visa.png" id="visahint" style="display: none;">
 <div class="ui grid">
   <div id="window" class="row">
     <div id="appview" class="sixteen wide eight wide computer column">
@@ -151,7 +152,7 @@
         <p>You probably want to use your email address to fully play around with the <b>Reset Password</b> workflow in the demo.  You could use a fake email like <code>foo@bar.com</code>, you just won't be able to <b>Reset Password</b> later.</p>
       </div>
       <div class="ui basic center aligned segment">
-        <div class="ui primary submit button" onclick="$('#testvisa-modal').modal('hide')">Let's Go</div>
+        <div class="ui primary submit button" onclick="$('#visahint').delay(3000).fadeIn(1000); $('#testvisa-modal').modal('hide')">Let's Go</div>
       </div>
     </div>
   </div>

@@ -170,3 +170,10 @@ span#wallet-popup > img {
   left: -63px;
   z-index: 4;
 }
+
+#visahint {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+  z-index: 200;
+}
