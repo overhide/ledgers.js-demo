@@ -314,7 +314,7 @@ function _typeof(obj) {
 
  //     ledgers.js 
 //     https://ohledger.com
-//     (c) 2019 Overhide Inc.
+//     (c) 2019 Overhide LLC, Wyoming, USA
 //     ledgers.js may be freely distributed under the MIT license.
 
 /**
