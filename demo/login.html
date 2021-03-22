@@ -10,7 +10,8 @@
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
   <link rel="stylesheet" type="text/css" href="ignore/styles.css">
 
-  <!-- "wallet" helper -->
+  <!-- "wallet" helper + web3.js dependency -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.4/web3.min.js" integrity="sha512-TTGImODeszogiro9DUvleC9NJVnxO6M0+69nbM3YE9SYcVe4wZp2XYpELtcikuFZO9vjXNPyeoHAhS5DHzX1ZQ==" crossorigin="anonymous"></script>    
   <script src="ledgers.js"></script>
 </head>
 
@@ -20,6 +21,29 @@
   log('global settings: paymentSchedule', paymentSchedule); 
   // NOTE: the above is loaded from config.js ^^^
   // config.js is shared between this login.html and service.html 
+
+  (/* setup token on load */ () => {
+    const tokenUrl = `https://token.overhide.io/token`;
+    const apiKey = '0x___API_KEY_ONLY_FOR_DEMOS_AND_TESTS___';
+    const url = `${tokenUrl}?apikey=${apiKey}`;
+
+    log('retrieving token on load', {url: url});
+    fetch(url, {
+      method: 'GET'
+    }).then(async result => {
+      if (result.status == 200) {
+        const token = await result.text();
+        log('successfuly retrieved token', {url: url, token: token});
+        oh$.enable(token);
+        log('enabled library with token');
+
+      } else {
+        log('failed to get token', {url: url, status: result.status, error: result.message});
+      }
+    }).catch(e => {
+      log('failed to get token', {url: url, exception: e});
+    });
+  })();
 
   log('setting ohledger network to test');
   oh$.setNetwork(OHLEDGER,{currency:'USD',mode:'test'});

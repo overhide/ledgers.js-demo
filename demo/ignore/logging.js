@@ -42,5 +42,5 @@ function setCodeToMessage(file, message) {
   $('#codeframe').attr('src', null);
   setTimeout(function () {
     $('#codeframe').attr('src', 'ignore/code.html#../' + file + '/' + encodeURI(message));
-  }, 0);
+  }, 100);
 }

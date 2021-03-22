@@ -131,6 +131,7 @@
 </div>
 
 <script>
+
   window.onload = async function() {
     showPostScreenSetupLogs();
 
@@ -144,13 +145,14 @@
     var uri = urlmatches[5];
     var url = new URL(uri);
     var swaggeruri = `${url.protocol}//${url.host}/swagger.html`;
+    var token = await getToken();
     $('#ledger').text(ledger === 'eth-web3' ? 'Ethereum (rinkeyby)' : 'overhide-ledger (USD)');
     $('#address').text(address);
     $('.swaggerpage').attr('href',`${swaggeruri}`);
     
     try {
       log('Checking validity of address on ledger', {ledger:ledger, address:address}, 'service.html');
-      if (!await isValidOnLedger(uri, address, message, signature)) {
+      if (!await isValidOnLedger(uri, token, address, message, signature)) {
         log('Invalid address on ledger as per signature', null, 'service.html');
         return;
       }
@@ -166,11 +168,11 @@
     }
     
     try {
-      log('Determining auth tier', { ledger: ledger, uri: uri, from: address, to: recipient }, 'service.html');
-      var tier = await getTier(ledger, uri, address, recipient);
+      log('Determining auth tier', { ledger: ledger, uri: uri, token: token, from: address, to: recipient }, 'service.html');
+      var tier = await getTier(ledger, uri, token, address, recipient);
       log('Determined auth tier',{tier:tier},'service.html');
     } catch (e) {
-      log('Error determining auth tier', { ledger: ledger, uri: uri, from: address, to: recipient }, 'service.html');
+      log('Error determining auth tier', { ledger: ledger, uri: uri, token: token, from: address, to: recipient }, 'service.html');
       return;
     }
 
@@ -183,18 +185,47 @@
   }
 
   /**
+   * Retrieve API access token
+   * 
+   * @returns {string} the token.
+   */
+  async function getToken() {
+    const tokenUrl = `https://token.overhide.io/token`;
+    const apiKey = '0x___API_KEY_ONLY_FOR_DEMOS_AND_TESTS___';
+    const url = `${tokenUrl}?apikey=${apiKey}`;
+
+    log('retrieving token for APIs', {url: url}, 'service.html');
+    return fetch(url, {
+      method: 'GET'
+    }).then(result => {
+      if (result.status == 200) {
+        return result.text();
+      } else {
+        throw(JSON.stringify({url: url, status: result.status, error: result.message}));
+      }
+    }).then(token => {
+      log('successfuly retrieved token for APIs', {url: url, token: token}, 'service.html');
+      return token;
+    }).catch(e => {
+      log('failed to get token for APIs', {url: url, exception: e}, 'service.html');
+    });
+  }
+
+  /**
    * Determine tier.
    * 
    * @param {string} ledger - in config.js to get config from
    * @param {string} uri - of overhide remuneration provider API
+   * @param {string} token - for accessing remuneration provider API
    * @param {string} from - tally transactions from this address
    * @param {string} to - tally transactions to this address
    * @returns {string} either 'common', 'epic', or 'legendary'
    */
-  async function getTier(ledger, uri, from, to) {
+  async function getTier(ledger, uri, token, from, to) {
     log('Determining cost covered for epic',null,'service.html');
     var isEpicCovered = await isCostCovered(
       uri, 
+      token,
       from, 
       to,
       parseFloat(paymentSchedule[ledger].epicTierCost) * paymentSchedule[ledger].currencyLabelToDenominationMultiplier,
@@ -202,6 +233,7 @@
     log('Determining cost covered for legendary', null, 'service.html');
     var isLegendaryCovered = await isCostCovered(
       uri,
+      token,
       from,
       to,
       parseFloat(paymentSchedule[ledger].legendaryTierCost) * paymentSchedule[ledger].currencyLabelToDenominationMultiplier,
@@ -216,16 +248,17 @@
    * Determine if cost is covered withing the number of days on the ledger
    * 
    * @param {string} uri - of overhide remuneration provider API
+   * @param {string} token - for accessing remuneration provider API
    * @param {string} from - tally transactions from this address
    * @param {string} to - tally transactions to this address
    */
-  async function isCostCovered(uri, from, to, cost, tallyDays) {
+  async function isCostCovered(uri, token, from, to, cost, tallyDays) {
     if (tallyDays) {
       let since = new Date();
       since.setDate(since.getDate() - tallyDays);
-      var tally = await getTally(uri, from, to, since);
+      var tally = await getTally(uri, token, from, to, since);
     } else {
-      var tally = await getTally(uri, from, to, null);
+      var tally = await getTally(uri, token, from, to, null);
     }
     var delta = cost - tally;
     return delta <= 0;
@@ -237,16 +270,20 @@
    * Call overhide remuneration API to check validity of signature for address
    * 
    * @param {string} uri - of overhide remuneration provider API
+   * @param {string} token - for accessing remuneration provider API
    * @param {string} address - to check
    * @param {string} message - that's signed in signature
    * @param {string} signature - to check for address
    * @returns {boolean}
    */
-  async function isValidOnLedger(uri, address, message, signature) {
+  async function isValidOnLedger(uri, token, address, message, signature) {
     log('remunaration API >> isValidOnLedger call', null, 'service.html');
     return await fetch(`${uri}/is-signature-valid`, {
       method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
+      headers: { 
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({
         signature: btoa(signature),
         message: btoa(message),
@@ -272,18 +309,22 @@
    * Call overhide remuneration API to get transaction tally for determining authority tiers
    * 
    * @param {string} uri - of overhide remuneration provider API
+   * @param {string} token - for accessing remuneration provider API
    * @param {string} from - tally transactions from this address 
    * @param {string} to - tally transactions to this address
    * @param {Date} date - 'null' for all-time, or date since when to tally transactions
    * @returns {string} tally in remuneration provider's denomination
    */ 
-  async function getTally(uri, from, to, date) {
+  async function getTally(uri, token, from, to, date) {
     log('remunaration API >> getTally call', null, 'service.html');
     let since = '';
     if (date) {
       since = `&since=${date.toISOString()}`;
     }
-    return await fetch(`${uri}/get-transactions/${from}/${to}?tally-only=true${since}`)
+    return await fetch(`${uri}/get-transactions/${from}/${to}?tally-only=true${since}`, {
+        headers: { 
+          "Authorization": `Bearer ${token}`
+        }})
       .then(res => res.json())
       .then(res => {
         log('remunaration API >> getTally call OK', {tally: res.tally}, 'service.html');

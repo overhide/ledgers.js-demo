@@ -46,7 +46,7 @@ This [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source
 The respective API instances used by the [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) are the following test network nodes:
 
 * ether:  [*overhide* Remuneration API for Ethereum](https://rinkeby.ethereum.overhide.io/swagger.html) 
-* dollars:  [*overhide-ledger*--the renmuneration provider for US dollars](https://test.ohledger.com/swagger.html)
+* dollars:  [*overhide-ledger*--the renmuneration provider for US dollars](https://test.ledger.overhide.io/swagger.html)
 
 Use a [Rinkeby](https://faucet.rinkeby.io/) faucet to get "test" Ether for playing around with Ethereum in the [demo](https://overhide.github.io/ledgers.js-demo/demo/login.html) ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)).
 
@@ -147,11 +147,27 @@ We need it in the front-end to tell the user what our prices for each tier are.
 
 We need it in the service to know what payment amounts constitute authorizations to which tier. 
 
+**( o_o) Take note of the `"[...] (login.html) :: successfuly retrieved token : {"` trace.**
+
+The [ledgers.js library requires an authorization token](https://overhide.io//2021/03/21/tokens.html). 
+
+The asynchronous token retrieval starts earlier with the trace:
+
+```
+[...] (login.html) :: retrieving token on load : {
+```
+
+Once it's available, it's provided to the library:
+
+```
+oh$.enable(token);
+```
+
 **( o_o) Take note of the `"appAddress": "0x046c88317b23dc57F6945Bf4140140f73c8FC80F"`.**
 
 All the ledgers enumerated in our *payment schedule* list the application as having the address *0x046c88317b23dc57F6945Bf4140140f73c8FC80F*.
 
-This is the application's Ethereum address on the [rinkeby testnet](https://rinkeby.etherscan.io/address/0x046c88317b23dc57f6945bf4140140f73c8fc80f) and on the [test *overhide-ledger*](https://test.ohledger.com/).
+This is the application's Ethereum address on the [rinkeby testnet](https://rinkeby.etherscan.io/address/0x046c88317b23dc57f6945bf4140140f73c8fc80f) and on the [test *overhide-ledger*](https://test.ledger.overhide.io/).
 
 This is the address receiving (make-pretend) payments from the game's players.
 
@@ -223,7 +239,7 @@ Our clicking of the "Generate" button caused the `ui.onGenerate` callback to run
 
 The logging pane shows the UI's *onGenerate* function where our first interaction with the [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html) occurs.
 
-We see `ui.onGenerate` call [oh$.generateCredentials](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html#generatecredentials), passing in the "ohledger" imparter tag, indicating the [ledger](https://test.ohledger.com/swagger.html) we're working with.
+We see `ui.onGenerate` call [oh$.generateCredentials](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html#generatecredentials), passing in the "ohledger" imparter tag, indicating the [ledger](https://test.ledger.overhide.io/swagger.html) we're working with.
 
 **( o_o) Notice the `[...] (https://overhide.github.io/ledgers.js-demo/demo/login.html) :: OH >> onCredentialsUpdate :: wallet callback called--address updated : {..}` log.**
 
@@ -245,7 +261,7 @@ Following along--in the code pane--we see that the [oh$.onCredentialsUpdate call
 
 The `gatherData()` function call (at the end of the [callback](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html#oncredentialsupdate)) triggers [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html) getters to update payment amounts via the "ohledger" imparter--the currently selected ledger--and compare it to the pre-configured payment schedule ([config.js](https://github.com/overhide/ledgers.js/blob/master/demo/config.js)).
 
-This stack of functions make several calls to the [ledger](https://test.ohledger.com/swagger.html) abstracted via [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html):
+This stack of functions make several calls to the [ledger](https://test.ledger.overhide.io/swagger.html) abstracted via [*ledgers.js*](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html):
 
 * [oh$.getTally](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html#gettally)
 * [oh$.getTransactions](https://overhide.github.io/ledgers.js/ledgers.js-rendered-docs/index.html#gettransactions)
@@ -302,6 +318,23 @@ These logs show the same *payment schedule* as we saw before in *login.html* ([s
 The *service* is configured with the same schedule so as to be on the same page with respect to transaction tallies expected.
 
 Whereby *login.html* ([source](https://github.com/overhide/ledgers.js/blob/master/demo/login.html)) needs the *payment schedule* to aid the user in paying, *service.html* ([source](https://github.com/overhide/ledgers.js/blob/master/demo/service.html)) needs it to validate payment before allowing asked-for authorizations.
+
+**( o_o) Take note of the `"[...] (service.html) :: successfuly retrieved token for APIs : {"` trace.**
+
+On the back-end, our remuneration API calls also require a token.
+
+The token is retrieved using  the `getToken()` function and passed into the various `fetch` commands:
+
+```
+fetch(..., {
+  ...
+  headers: { 
+    "Authorization": `Bearer ${token}`
+  }
+})
+```
+
+
 
 **(¬-_-)¬ Click the `[...] (service.html) :: remunaration API >> isValidOnLedger call` log.**
 
