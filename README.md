@@ -1,5 +1,9 @@
 <p align="center"><a href="https://github.com/overhide"><img src="./.github/logo.png" width="200px"/></a></p>
 
+<p align="center"><a href="https://overhide.io">overhide.io</a></p><p style="width: 500px; margin: auto">A free and open-sourced (mostly) ecosystem of widgets, a front-end library, and back-end services &mdash; to make addition of "logins" and "in-app-purchases" (IAP) to your app as banal as possible.</p>
+
+<hr/>
+
 # [ledgers.js](https://www.npmjs.com/package/ledgers.js) demo
 
 This repository is a [tutorial/demo/example login page](https://overhide.github.io/ledgers.js-demo/demo/login.html) for the [ledger-based authorization workflow](https://overhide.io/2019/03/20/why.html) as provided by the [ledgers.js](https://www.npmjs.com/package/ledgers.js) library.
